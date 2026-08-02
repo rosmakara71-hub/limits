@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ក្រាបអន្តរកម្ម៖ អត្ថន័យនៃលីមីត</title>
+    
+    <!-- ១. កំណត់ Configuration ឱ្យ MathJax ស្គាល់សញ្ញា $...$ សម្រាប់រូបមន្ត Inline -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    
+    <!-- ២. បញ្ចូល MathJax Library -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: 'Khmer OS Battambang', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+        }
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .description {
+            font-size: 1.1em;
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+        .math-box {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #3498db;
+            margin-bottom: 25px;
+        }
+        
+        /* Layout សម្រាប់ក្រាប និងកុងត្រូល */
+        .interactive-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            align-items: flex-start;
+        }
+        .controls {
+            flex: 1;
+            min-width: 250px;
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+        .graph-area {
+            flex: 2;
+            min-width: 300px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        /* ក្រាហ្វិក SVG */
+        svg {
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        }
+        .axis { stroke: #333; stroke-width: 2; }
+        .grid { stroke: #eee; stroke-width: 1; }
+        .curve { stroke: #3498db; stroke-width: 3; fill: none; }
+        .hole { fill: white; stroke: #3498db; stroke-width: 2; }
+        .moving-point { fill: #e74c3c; transition: all 0.05s linear; }
+        .dashed-line { stroke: #e74c3c; stroke-width: 1.5; stroke-dasharray: 5,5; transition: all 0.05s linear; }
+        
+        /* Slider */
+        .slider-container { margin-top: 20px; }
+        input[type=range] {
+            width: 100%;
+            cursor: pointer;
+        }
+        .status-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #856404;
+        }
+        .value-display {
+            font-size: 1.2em;
+            margin-top: 10px;
+            color: #2c3e50;
+        }
+        .val-x { color: #e74c3c; font-weight: bold; }
+        .val-y { color: #27ae60; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>📈 ស្វែងយល់ពីអត្ថន័យនៃលីមីត</h2>
+        
+        <div class="description">
+            លីមីត គឺជាការសិក្សាពីតម្លៃនៃអនុគមន៍ $f(x)$ នៅពេលដែលអថេរ $x$ ខិតជិតទៅរកតម្លៃណាមួយ (ប៉ុន្តែមិនស្មើវា)។ 
+            ដើម្បីយល់ច្បាស់ សូមពិនិត្យមើលអនុគមន៍ខាងក្រោម៖
+        </div>
+
+        <div class="math-box">
+            $$ \lim_{x \to 2} \frac{x^2 - 4}{x - 2} = ? $$
+            <p style="margin-top:10px; font-size:0.9em; color:#555;">
+                *សម្គាល់៖ ប្រសិនបើយើងជំនួស $x=2$ ផ្ទាល់ចូលទៅក្នុងអនុគមន៍ វានឹងចេញទម្រង់ $\frac{0}{0}$ (មិនកំណត់)។ ប៉ុន្តែតើក្រាបរបស់វាមានលក្ខណៈដូចម្តេច?
+            </p>
+        </div>
+
+        <div class="interactive-area">
+            <!-- ផ្ទាំងបញ្ជា (Controls) -->
+            <div class="controls">
+                <label for="x-slider"><strong>អូសដើម្បីផ្លាស់ប្តូរតម្លៃ $x$ ៖</strong></label>
+                <div class="slider-container">
+                    <input type="range" id="x-slider" min="0" max="4" step="0.01" value="0.5">
+                </div>
+                
+                <div class="value-display">
+                    តម្លៃបច្ចុប្បន្ន៖<br>
+                    $x =$ <span class="val-x" id="x-val">0.50</span><br>
+                    $f(x) =$ <span class="val-y" id="y-val">2.50</span>
+                </div>
+
+                <div class="status-box" id="status-message">
+                    អូសរង្វិលខិតទៅជិតលេខ $2$...
+                </div>
+            </div>
+
+            <!-- ផ្ទាំងក្រាប (Graph) -->
+            <div class="graph-area">
+                <svg width="400" height="350" id="graph-svg">
+                    <!-- Grid Lines -->
+                    <g id="grid-group"></g>
+                    
+                    <!-- អ័ក្ស (Axes) -->
+                    <line x1="40" y1="300" x2="380" y2="300" class="axis" />
+                    <line x1="40" y1="300" x2="40" y2="20" class="axis" />
+                    
+                    <!-- ឈ្មោះអ័ក្ស -->
+                    <text x="370" y="320" font-weight="bold">x</text>
+                    <text x="20" y="30" font-weight="bold">y</text>
+                    
+                    <!-- លេខលើអ័ក្ស X -->
+                    <text x="40" y="320" text-anchor="middle">0</text>
+                    <text x="120" y="320" text-anchor="middle">1</text>
+                    <text x="200" y="320" text-anchor="middle">2</text>
+                    <text x="280" y="320" text-anchor="middle">3</text>
+                    <text x="360" y="320" text-anchor="middle">4</text>
+
+                    <!-- លេខលើអ័ក្ស Y -->
+                    <text x="30" y="225" text-anchor="end">2</text>
+                    <text x="30" y="145" text-anchor="end">4</text>
+                    <text x="30" y="65" text-anchor="end">6</text>
+
+                    <!-- ខ្សែកោង f(x) -->
+                    <line x1="40" y1="220" x2="360" y2="60" class="curve" />
+                    
+                    <!-- ប្រហោងនៅត្រង់ x = 2 -->
+                    <circle cx="200" cy="140" r="6" class="hole" />
+
+                    <!-- ចំណុចអន្តរកម្ម -->
+                    <line id="dash-x" class="dashed-line" x1="80" y1="200" x2="80" y2="300" />
+                    <line id="dash-y" class="dashed-line" x1="40" y1="200" x2="80" y2="200" />
+                    <circle id="moving-dot" cx="80" cy="200" r="6" class="moving-point" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const getX = (x) => 40 + (x * 80);
+        const getY = (y) => 300 - (y * 40);
+
+        const slider = document.getElementById('x-slider');
+        const dot = document.getElementById('moving-dot');
+        const dashX = document.getElementById('dash-x');
+        const dashY = document.getElementById('dash-y');
+        
+        const xValDisplay = document.getElementById('x-val');
+        const yValDisplay = document.getElementById('y-val');
+        const statusMsg = document.getElementById('status-message');
+
+        const gridGroup = document.getElementById('grid-group');
+        for(let i=1; i<=4; i++) {
+            let lineX = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            lineX.setAttribute("x1", getX(i)); lineX.setAttribute("y1", 300);
+            lineX.setAttribute("x2", getX(i)); lineX.setAttribute("y2", 20);
+            lineX.setAttribute("class", "grid");
+            gridGroup.appendChild(lineX);
+        }
+        for(let j=1; j<=6; j++) {
+            let lineY = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            lineY.setAttribute("x1", 40); lineY.setAttribute("y1", getY(j));
+            lineY.setAttribute("x2", 380); lineY.setAttribute("y2", getY(j));
+            lineY.setAttribute("class", "grid");
+            gridGroup.appendChild(lineY);
+        }
+
+        function updateGraph() {
+            let x = parseFloat(slider.value);
+            
+            if(Math.abs(x - 2.0) < 0.001) {
+                x = 2.0;
+                xValDisplay.innerText = "2.00";
+                yValDisplay.innerText = "មិនកំណត់";
+                yValDisplay.style.color = "red";
+                
+                dot.style.display = "none";
+                dashX.setAttribute("x1", getX(2)); dashX.setAttribute("x2", getX(2));
+                dashX.setAttribute("y1", getY(4)); dashX.setAttribute("y2", 300);
+                dashY.setAttribute("x1", 40); dashY.setAttribute("x2", getX(2));
+                dashY.setAttribute("y1", getY(4)); dashY.setAttribute("y2", getY(4));
+                
+                statusMsg.innerHTML = "🚫 ត្រង់ $x = 2$ អនុគមន៍មិនកំណត់។ ប៉ុន្តែលីមីតរបស់វាគឺស្មើ <strong>4</strong> ។";
+                statusMsg.style.backgroundColor = "#f8d7da";
+                statusMsg.style.borderColor = "#f5c6cb";
+                statusMsg.style.color = "#721c24";
+            } else {
+                let y = (x*x - 4) / (x - 2); 
+                
+                xValDisplay.innerText = x.toFixed(2);
+                yValDisplay.innerText = y.toFixed(2);
+                yValDisplay.style.color = "#27ae60";
+                
+                let svgX = getX(x);
+                let svgY = getY(y);
+                
+                dot.style.display = "block";
+                dot.setAttribute("cx", svgX);
+                dot.setAttribute("cy", svgY);
+                
+                dashX.setAttribute("x1", svgX); dashX.setAttribute("x2", svgX);
+                dashX.setAttribute("y1", svgY); dashX.setAttribute("y2", 300);
+                
+                dashY.setAttribute("x1", 40); dashY.setAttribute("x2", svgX);
+                dashY.setAttribute("y1", svgY); dashY.setAttribute("y2", svgY);
+
+                if (Math.abs(x - 2) <= 0.2) {
+                    statusMsg.innerHTML = "🎯 ល្អណាស់! នៅពេល $x$ ខិតជិត $2$ ខ្លាំង នោះតម្លៃ $f(x)$ កាន់តែខិតជិត <strong>4</strong> ។";
+                    statusMsg.style.backgroundColor = "#d4edda";
+                    statusMsg.style.borderColor = "#c3e6cb";
+                    statusMsg.style.color = "#155724";
+                } else {
+                    statusMsg.innerHTML = "អូសរង្វិលឱ្យតម្លៃ $x$ កាន់តែខិតជិតលេខ $2$ បន្តិចម្តងៗ...";
+                    statusMsg.style.backgroundColor = "#fff3cd";
+                    statusMsg.style.borderColor = "#ffc107";
+                    statusMsg.style.color = "#856404";
+                }
+            }
+            
+            // ប្រាប់ MathJax ឱ្យបំប្លែងរូបមន្តសាជាថ្មីរាល់ពេលអត្ថបទ Status ផ្លាស់ប្តូរ
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetPromise([statusMsg]).catch(function (err) {
+                    console.error(err);
+                });
+            }
+        }
+
+        slider.addEventListener('input', updateGraph);
+        updateGraph();
+    </script>
+</body>
+</html>
