@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ការប្រឡង៖ ប្រមាណវិធីបូក ដក និងគុណពហុធា</title>
+    <title>ការប្រឡង៖ គណនាលីមីត</title>
         
     <!-- កំណត់ Configuration ឱ្យ MathJax ស្គាល់សញ្ញា $...$ -->
     <script>
@@ -248,9 +248,9 @@
 
 <div class="container" id="start-screen">
     <h2>ប្រឡងវាស់ស្ទង់សមត្ថភាពគណិតវិទ្យា</h2>
-    <div class="subtitle">ប្រធានបទ៖ ប្រមាណវិធីបូក ដក និងគុណពហុធា</div>
+    <div class="subtitle">ប្រធានបទ៖ ការគណនាលីមីត (Limits)</div>
     <p style="text-align: center; color: #7f8c8d; font-size: 1.1em;">
-        ចំនួនលំហាត់៖ ២០ គ្រាប់ (ចែកជា ៤ ទំព័រ) | ឆ្លើយត្រូវ៖ +៥ ពិន្ទុ | ឆ្លើយខុស៖ -២ ពិន្ទុ<br>
+        ចំនួនលំហាត់៖ <span id="total-q-count">២០</span> គ្រាប់ | ឆ្លើយត្រូវ៖ +៥ ពិន្ទុ | ឆ្លើយខុស៖ -២ ពិន្ទុ<br>
         <small style="color: #e74c3c;">*សម្គាល់៖ ប្រសិនបើអ្នកមិនជ្រើសរើសចម្លើយ មិនត្រូវបានកាត់ពិន្ទុឡើយ (០ ពិន្ទុ)។</small>
     </p>
     <div class="input-group" style="margin-top: 30px;">
@@ -290,7 +290,7 @@
             កាលបរិច្ឆេទ៖ <strong id="res-datetime"></strong>
         </div>
 
-        <div class="score-display">ពិន្ទុរបស់អ្នក៖ <span id="res-score"></span> / 100</div>
+        <div class="score-display">ពិន្ទុរបស់អ្នក៖ <span id="res-score"></span> / <span id="max-score-display">100</span></div>
         <div class="grade-display">និទ្ទេស៖ <span id="res-grade"></span></div>
         <div class="motivational-msg" id="res-msg"></div>
     </div>
@@ -304,8 +304,9 @@
         <button onclick="location.reload()">ត្រឡប់ទៅដើមវិញ 🔄</button>
     </div>
 </div>
+
 <script>
-// លំហាត់លីមីតបន្ថែមពីទី ២២ ដល់ ៤១ យោងតាមរូបភាព
+    // បញ្ជីលំហាត់លីមីត (ត្រឹមត្រូវតាមទម្រង់ JavaScript Array)
     const rawQuestions = [
         { eq: "\\lim_{x \\to 0} \\frac{1 - \\cos 5x}{x^2}", ans: "\\frac{25}{2}", options: ["\\frac{25}{2}", "\\frac{5}{2}", "25", "\\frac{25}{4}"], sol: "= \\lim_{x \\to 0} \\frac{2 \\sin^2(\\frac{5x}{2})}{x^2} = 2 \\cdot \\left(\\frac{5}{2}\\right)^2 = \\frac{25}{2}" },
         { eq: "\\lim_{x \\to 0} \\frac{\\tan 2012x}{\\sin 2013x}", ans: "\\frac{2012}{2013}", options: ["\\frac{2012}{2013}", "\\frac{2013}{2012}", "1", "0"], sol: "= \\lim_{x \\to 0} \\left( \\frac{\\tan 2012x}{2012x} \\cdot \\frac{2013x}{\\sin 2013x} \\cdot \\frac{2012}{2013} \\right) = \\frac{2012}{2013}" },
@@ -324,24 +325,30 @@
         { eq: "\\lim_{x \\to 0} \\frac{\\sin(5x + 2012\\pi)}{\\sin(10x + 4024\\pi)}", ans: "\\frac{1}{2}", options: ["\\frac{1}{2}", "1", "2", "\\frac{5}{12}"], sol: "= \\lim_{x \\to 0} \\frac{\\sin(5x)}{\\sin(10x)} = \\frac{5}{10} = \\frac{1}{2}" },
         { eq: "\\lim_{x \\to 0} \\frac{\\sin 5x + x \\sin 10x}{\\sin 5x - x \\sin 10x}", ans: "1", options: ["1", "-1", "0", "\\frac{1}{2}"], sol: "= \\lim_{x \\to 0} \\frac{\\frac{\\sin 5x}{x} + \\sin 10x}{\\frac{\\sin 5x}{x} - \\sin 10x} = \\frac{5 + 0}{5 - 0} = 1" },
         { eq: "\\lim_{x \\to 0} \\frac{1 + \\sin x - \\cos x}{1 + \\sin nx - \\cos nx}", ans: "\\frac{1}{n}", options: ["\\frac{1}{n}", "n", "1", "0"], sol: "= \\lim_{x \\to 0} \\frac{\\frac{1-\\cos x}{x} + \\frac{\\sin x}{x}}{\\frac{1-\\cos nx}{x} + \\frac{\\sin nx}{x}} = \\frac{0 + 1}{0 + n} = \\frac{1}{n}" },
-        { eq: "\\lim_{x \\to 0} \\frac{\\sin x \\cdot \\sin 2x \\cdot \\dots \\cdot \\sin nx}{x^n}", ans: "n!", options: ["n!", "(n-1)!", "n", "1"], sol: "= \\lim_{x \\to 0} \\left(\\frac{\\sin x}{x} \\cdot \\frac{\\sin 2x}{x} \\cdot \\dots \\cdot \\frac{\\sin nx}{x} \\right) \\cdot x^0 \\dots = 1 \\cdot 2 \\cdot \\dots \\cdot n = n!" },
+        { eq: "\\lim_{x \\to 0} \\frac{\\sin x \\cdot \\sin 2x \\cdot \\dots \\cdot \\sin nx}{x^n}", ans: "n!", options: ["n!", "(n-1)!", "n", "1"], sol: "= \\lim_{x \\to 0} \\left(\\frac{\\sin x}{x} \\cdot \\frac{\\sin 2x}{x} \\cdot \\dots \\cdot \\frac{\\sin nx}{x} \\right) = 1 \\cdot 2 \\cdot \\dots \\cdot n = n!" },
         { eq: "\\lim_{x \\to 0} \\frac{\\sin(\\sin 3x)}{\\sin(4x)}", ans: "\\frac{3}{4}", options: ["\\frac{3}{4}", "\\frac{4}{3}", "1", "\\frac{3}{2}"], sol: "= \\lim_{x \\to 0} \\left( \\frac{\\sin(\\sin 3x)}{\\sin 3x} \\cdot \\frac{\\sin 3x}{3x} \\cdot \\frac{4x}{\\sin 4x} \\cdot \\frac{3}{4} \\right) = \\frac{3}{4}" },
-        { eq: "\\lim_{x \\to 0} \\frac{(1 - \\cos x)^2}{\\tan^2 x - \\sin^2 x}", ans: "\\frac{1}{4}", options: ["\\frac{1}{4}", "\\frac{1}{2}", "1", "2"], sol: "= \\lim_{x \\to 0} \\frac{(1-\\cos x)^2}{\\tan^2 x \\sin^2 x} = \\frac{(x^2/2)^2}{x^2 \\cdot x^2} = \\frac{1}{4}" }
+        { eq: "\\lim_{x \\to 0} \\frac{(1 - \\cos x)^2}{\\tan^2 x - \\sin^2 x}", ans: "\\frac{1}{4}", options: ["\\frac{1}{4}", "\\frac{1}{2}", "1", "2"], sol: "= \\lim_{x \\to 0} \\frac{(1-\\cos x)^2}{\\tan^2 x \\sin^2 x} = \\frac{1}{4}" }
     ];
+
     let examQuestions = [];
     let startTime;
     let timerInterval;
     let studentName = "";
         
-    // ការកំណត់ Pagination (១ ទំព័រ មាន ៥ លំហាត់ => សរុប ៤ ទំព័រ)
+    // ការកំណត់ Pagination ស្វ័យប្រវត្តិតាមចំនួនលំហាត់សរុប
     let currentPage = 1;
     const questionsPerPage = 5;
     const totalPages = Math.ceil(rawQuestions.length / questionsPerPage);
 
-    // Function ការពារ Refresh / Close tab ដោយអចេតនា
+    // បង្ហាញចំនួនលំហាត់សរុបនៅទំព័រស្វាគមន៍
+    document.addEventListener("DOMContentLoaded", () => {
+        document.getElementById("total-q-count").innerText = rawQuestions.length;
+        document.getElementById("max-score-display").innerText = rawQuestions.length * 5;
+    });
+
     function preventClose(e) {
         e.preventDefault();
-        e.returnValue = ''; // តម្រូវសម្រាប់ browser ទំនើបៗ
+        e.returnValue = '';
     }
 
     function shuffle(array) {
@@ -379,7 +386,6 @@
         startTime = Date.now();
         timerInterval = setInterval(updateTimer, 1000);
 
-        // បើកដំណើរការទប់ស្កាត់ការ Refresh កំឡុងពេលប្រឡង
         window.addEventListener('beforeunload', preventClose);
     }
 
@@ -404,7 +410,7 @@
                 const globalIndex = startIndex + idx;
                 html += `
                     <div class="question-card" id="q-card-${globalIndex}">
-                        <div class="question-text">លំហាត់ទី ${globalIndex + 1} ៖ ចូរគណនាកន្សោមខាងក្រោម <br><br> $$ ${q.eq} = ? $$</div>
+                        <div class="question-text">លំហាត់ទី ${globalIndex + 1} ៖ ចូរគណនាលីមីត <br><br> $$ ${q.eq} $$</div>
                         <ul class="options-list">
                 `;
                 q.shuffledOptions.forEach((opt) => {
@@ -457,7 +463,6 @@
         updatePaginationUI();
     }
 
-    // Function សម្រាប់បង្ហាញ/លាក់ ចម្លើយត្រឹមត្រូវ និងដំណោះស្រាយម្ដងមួយលំហាត់
     function toggleAnswer(index) {
         const box = document.getElementById(`reveal-box-${index}`);
         const btn = document.getElementById(`btn-reveal-${index}`);
@@ -474,7 +479,6 @@
     }
 
     function submitExam() {
-        // រាប់ចំនួនលំហាត់ដែលសិស្សមិនទាន់បានជ្រើសរើសចម្លើយ
         let unansweredCount = 0;
         for (let i = 0; i < examQuestions.length; i++) {
             const selectedOption = document.querySelector(`input[name="q${i}"]:checked`);
@@ -483,7 +487,6 @@
             }
         }
 
-        // បើមានលំហាត់មិនទាន់ឆ្លើយ ត្រូវផ្ដល់ដំណឹងប្រាប់សិស្ស
         if (unansweredCount > 0) {
             let confirmUnanswered = confirm(`⚠️ អ្នកនៅសល់លំហាត់ចំនួន ${unansweredCount} ទៀតដែលមិនទាន់បានជ្រើសរើសចម្លើយ!\nតើអ្នកពិតជាចង់បញ្ចប់ការប្រឡងមែនទេ?`);
             if (!confirmUnanswered) return; 
@@ -511,6 +514,7 @@
         let score = 0;
         let reviewHtml = '';
 
+        //  vòng lặp tính điểm chính xác tuyệt đối
         examQuestions.forEach((q, index) => {
             const selectedOption = document.querySelector(`input[name="q${index}"]:checked`);
             const userAns = selectedOption ? selectedOption.value : null;
@@ -520,20 +524,19 @@
             let statusColor = '#f39c12';
             let solutionContent = '';
 
-            // កំណត់ពិន្ទុ៖ ឆ្លើយត្រូវបូក ៥ | ឆ្លើយខុសដក ២ | មិនឆ្លើយមិនគណនា
             if (userAns === q.ans) {
-                score += 5;
+                score += 5; // ឆ្លើយត្រូវបូក ៥ ពិន្ទុ
                 statusClass = 'correct-bg';
                 statusText = 'ត្រឹមត្រូវ ✅ (+៥ ពិន្ទុ)';
                 statusColor = '#27ae60';
             } else if (userAns !== null) {
-                score -= 2; // កាត់ ២ ពិន្ទុពេលឆ្លើយខុស
+                score -= 2; // ឆ្លើយខុសដក ២ ពិន្ទុ
                 statusClass = 'wrong-bg';
                 statusText = 'មិនទាន់ត្រឹមត្រូវ ❌ (-២ ពិន្ទុ)';
                 statusColor = '#c0392b';
             }
 
-            // ការពារមិនឱ្យពិន្ុសរុបធ្លាក់ក្រោម 0
+            // ការពារកុំឱ្យពិន្ទុសរុបធ្លាក់ក្រោម 0
             if (score < 0) score = 0;
 
             if (userAns !== null) {
@@ -558,11 +561,9 @@
                         <span style="color: ${statusColor}; font-weight: bold;">${statusText}</span><br><br>
                         ជម្រើសរបស់អ្នក៖ <strong>$ ${userAns !== null ? userAns : '\\text{គ្មាន}'} $</strong> <br><br>
                                                 
-                        <!-- បូតុងសម្រាប់ចុចបើក/បិទមើលចម្លើយត្រឹមត្រូវ -->
                         <button onclick="toggleAnswer(${index})" id="btn-reveal-${index}" style="background-color: #e67e22; padding: 6px 15px; font-size: 14px; margin-top: 5px;">👁️ មើលចម្លើយត្រឹមត្រូវ និងដំណោះស្រាយ</button>
                     </div>
 
-                    <!-- ប្រអប់លាក់ចម្លើយត្រឹមត្រូវ -->
                     <div id="reveal-box-${index}" style="display: none; margin-top: 15px;">
                         <div style="font-size: 16px; margin-bottom: 10px;">ចម្លើយត្រឹមត្រូវ៖ <strong>$ ${q.ans} $</strong></div>
                         ${solutionContent}
@@ -571,14 +572,17 @@
             `;
         });
 
+        let maxScore = rawQuestions.length * 5;
         let grade = '';
         let msg = '';
-        if (score >= 90) { grade = 'A (ល្អប្រសើរ)'; msg = 'អស្ចារ្យណាស់! អ្នកពិតជាយល់ច្បាស់ពីប្រមាណវិធីលើពហុធា! 🌟'; }
-        else if (score >= 80) { grade = 'B (ល្អណាស់)'; msg = 'ធ្វើបានល្អណាស់! បន្តការខិតខំបន្ថែមទៀត! 👍'; }
-        else if (score >= 70) { grade = 'C (ល្អ)'; msg = 'លទ្ធផលល្អ! សាកល្បងហ្វឹកហាត់បន្ថែមដើម្បីទទួលបានលទ្ធផលកាន់តែប្រសើរ! 💪'; }
-        else if (score >= 60) { grade = 'D (បង្គួរ)'; msg = 'អ្នកយល់បានមួយកម្រិតហើយ ត្រូវការរំលឹកក្បួនបូកដកនិងគុណសញ្ញាឡើងវិញបន្តិចទៀត! 📚'; }
-        else if (score >= 50) { grade = 'E (មធ្យម)'; msg = 'លទ្ធផលមធ្យម! សូមប្រុងប្រយ័ត្នពេលបើកវង់ក្រចកដែលមានសញ្ញាដក (-) នៅពីមុខ! 📖'; }
-        else { grade = 'F (ធ្លាក់)'; msg = 'សូមកុំបោះបង់! ព្យាយាមមើលមេរៀន និងសម្រាយបញ្ជាក់ឡើងវិញណា៎! 🤝'; }
+        let percentage = (score / maxScore) * 100;
+
+        if (percentage >= 90) { grade = 'A (ល្អប្រសើរ)'; msg = 'អស្ចារ្យណាស់! អ្នកពិតជាយល់ច្បាស់ពីការគណនាលីមីត! 🌟'; }
+        else if (percentage >= 80) { grade = 'B (ល្អណាស់)'; msg = 'ធ្វើបានល្អណាស់! បន្តការខិតខំបន្ថែមទៀត! 👍'; }
+        else if (percentage >= 70) { grade = 'C (ល្អ)'; msg = 'លទ្ធផលល្អ! សាកល្បងហ្វឹកហាត់បន្ថែមដើម្បីទទួលបានលទ្ធផលកាន់តែប្រសើរ! 💪'; }
+        else if (percentage >= 60) { grade = 'D (បង្គួរ)'; msg = 'អ្នកយល់បានមួយកម្រិតហើយ ត្រូវការរំលឹកក្បួនត្រីកោណមាត្រនិងលីមីតបន្តិចទៀត! 📚'; }
+        else if (percentage >= 50) { grade = 'E (មធ្យម)'; msg = 'លទ្ធផលមធ្យម! សូមប្រុងប្រយ័ត្នពេលបំប្លែងកន្សោម! 📖'; }
+        else { grade = 'F (ធ្លាក់)'; msg = 'សូមកុំបោះបង់! ព្យាយាមមើលទ្រឹស្តីបទ និងសម្រាយបញ្ជាក់ឡើងវិញណា៎! 🤝'; }
 
         document.getElementById('exam-screen').style.display = 'none';
         document.getElementById('result-screen').style.display = 'block';
@@ -587,6 +591,7 @@
         document.getElementById('res-time').innerText = document.getElementById('timer').innerText;
         document.getElementById('res-datetime').innerText = formattedDateTime;
         document.getElementById('res-score').innerText = score;
+        document.getElementById('max-score-display').innerText = maxScore;
         document.getElementById('res-grade').innerText = grade;
         document.getElementById('res-msg').innerText = msg;
 
